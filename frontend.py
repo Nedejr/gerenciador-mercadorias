@@ -5,6 +5,7 @@ import time
 from utils import generate_pdf
 import plotly.express as px
 import subprocess
+import app
 
 API_URL = "http://127.0.0.1:5000"
 
