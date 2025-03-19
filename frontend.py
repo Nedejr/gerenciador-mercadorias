@@ -4,9 +4,13 @@ import pandas as pd
 import time
 from utils import generate_pdf
 import plotly.express as px
-
+import subprocess
 
 API_URL = "http://127.0.0.1:5000"
+
+# Inicia a API Flask em segundo plano
+api_process = subprocess.Popen(["python", "app.py"])
+
 
 st.set_page_config(page_title="Gerenciamento de Produtos", page_icon="📦")
 st.title("📦 Gerenciamento de Produtos")
@@ -18,8 +22,32 @@ sidebar_options_produtos = [
                             'Saída de Produtos',
                             'Gráficos'
                             ]
-f_pagina = st.sidebar.selectbox("Selecione a página:", sidebar_options_produtos, placeholder='Selecione a opção', index=2)
+f_pagina = st.sidebar.selectbox("Selecione a página:", sidebar_options_produtos, placeholder='Selecione a opção', index=0)
 st.subheader(f_pagina)
+
+# Aguarde até que a API esteja disponível
+max_retries = 20  # Número máximo de tentativas
+attempts = 0
+
+while attempts < max_retries:
+    try:
+        response = requests.get(f"{API_URL}/produtos")
+
+        if response.status_code == 200:
+            st.sidebar.warning("✅ API carregada com sucesso!")
+            break
+    except requests.exceptions.ConnectionError as error:
+        
+        print(f"⏳ Aguardando API carregar...{error}")
+    
+    attempts += 1
+    time.sleep(2)  # Espera 2 segundos antes de tentar novamente
+    
+
+if attempts == max_retries:
+    st.sidebar.error("❌ Falha ao conectar à API. Verifique se o app.py está rodando corretamente.")
+    exit(1)  # Encerra o script caso a API não carregue
+
 
 if f_pagina == 'Listar Produtos':
 
